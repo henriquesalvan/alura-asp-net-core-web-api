@@ -6,7 +6,9 @@ using Microsoft.Extensions.DependencyModel;
 
 namespace Alura.ListaLeitura.WebApp.Api
 {
-    public class LivrosController : Controller
+    [ApiController]
+    [Route("[controller]")]
+    public class LivrosController : ControllerBase
     {
         private readonly IRepository<Livro> _repository;
 
@@ -15,7 +17,7 @@ namespace Alura.ListaLeitura.WebApp.Api
             _repository = repository;
         }
 
-        [HttpGet]
+        [HttpGet("{id}")]
         public IActionResult Recuperar(int id)
         {
             var model = _repository.Find(id);
@@ -25,26 +27,25 @@ namespace Alura.ListaLeitura.WebApp.Api
                 return NotFound();
             }
 
-            return Json(model.ToModel());
+            return Ok(model.ToModel());
         }
 
         [HttpPost]
-        public IActionResult Incluir(LivroUpload model)
+        public IActionResult Incluir([FromBody] LivroUpload model)
         {
             if (ModelState.IsValid)
             {
                 var livro = model.ToLivro();
                 _repository.Incluir(livro);
-
-                var uri = Url.Action("Recuperar", new {id = livro.Id});
-                return Created(uri, livro);
+                
+                return Created("", livro);
             }
 
             return BadRequest();
         }
 
-        [HttpPost]
-        public IActionResult Alterar(LivroUpload model)
+        [HttpPut]
+        public IActionResult Alterar([FromBody] LivroUpload model)
         {
             if (ModelState.IsValid)
             {
@@ -64,7 +65,7 @@ namespace Alura.ListaLeitura.WebApp.Api
             return BadRequest();
         }
 
-        [HttpDelete]
+        [HttpDelete("{id}")]
         public IActionResult Remover(int id)
         {
             var model = _repository.Find(id);
